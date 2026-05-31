@@ -154,19 +154,101 @@ def run_gui(config: dict[str, object] | None = None) -> None:  # Run the analyze
         run_cli(active_config)  # Fall back to the terminal version.
         return  # Stop the GUI startup path.
     root.title(str(active_config["window_title"]))  # Set the window title from configuration.
-    root.geometry("560x420")  # Give the window a practical starting size.
-    root.minsize(520, 380)  # Prevent the window from becoming too small to read.
-    root.configure(padx=16, pady=16)  # Add some breathing room around the content.
-    title_label = tk.Label(root, text="Password Strength Analyzer", font=("Segoe UI", 18, "bold"))  # Build the title label.
-    title_label.pack(anchor="w", pady=(0, 8))  # Place the title at the top of the window.
-    prompt_label = tk.Label(root, text="Enter a password to analyze:", font=("Segoe UI", 10))  # Build the prompt label.
-    prompt_label.pack(anchor="w")  # Place the prompt above the input box.
-    password_entry = tk.Entry(root, show="*", font=("Segoe UI", 12), width=36)  # Create a masked password input.
-    password_entry.pack(fill="x", pady=(6, 10))  # Stretch the input box across the window.
-    result_box = scrolledtext.ScrolledText(root, height=14, font=("Consolas", 10), wrap="word")  # Create the results panel.
-    result_box.pack(fill="both", expand=True, pady=(0, 10))  # Let the panel grow with the window.
+    root.geometry("760x560")  # Give the window a larger starting size for the themed layout.
+    root.minsize(700, 520)  # Prevent the window from becoming too small to read.
+    root.configure(bg="#5ec8ff")  # Use a bright sky-blue background for the retro game look.
+    root.option_add("*Font", ("Segoe UI", 10))  # Set a consistent base font for the window.
+    root.option_add("*TButton*Font", ("Segoe UI", 10, "bold"))  # Give buttons a stronger arcade feel.
+    root.option_add("*TEntry*Font", ("Consolas", 12))  # Use a console-style font for the password field.
+
+    outer_frame = tk.Frame(root, bg="#5ec8ff", padx=18, pady=18)  # Create the outer themed frame.
+    outer_frame.pack(fill="both", expand=True)  # Let the frame fill the window.
+
+    header_canvas = tk.Canvas(outer_frame, height=120, bg="#5ec8ff", highlightthickness=0)  # Create a sky backdrop.
+    header_canvas.pack(fill="x", pady=(0, 14))  # Place the backdrop above the main panel.
+    header_canvas.create_oval(22, 18, 112, 108, fill="#ffffff", outline="#ffffff")  # Draw a soft cloud.
+    header_canvas.create_oval(72, 26, 156, 94, fill="#ffffff", outline="#ffffff")  # Draw the second cloud puff.
+    header_canvas.create_oval(620, 16, 700, 92, fill="#fff6b0", outline="#fff6b0")  # Draw a bright sun.
+    header_canvas.create_text(640, 34, text="*", fill="#ffffff", font=("Consolas", 18, "bold"))  # Add a sparkle near the sun.
+    header_canvas.create_text(672, 68, text="*", fill="#ffffff", font=("Consolas", 18, "bold"))  # Add a second sparkle near the sun.
+    header_canvas.create_text(18, 22, anchor="nw", text="RETRO POWER CHECK", fill="#ffe066", font=("Consolas", 15, "bold"))  # Add an arcade-style header.
+    header_canvas.create_text(18, 50, anchor="nw", text="A platformer-inspired password analyzer", fill="#ffffff", font=("Segoe UI", 11, "bold"))  # Add the subtitle.
+    header_canvas.create_rectangle(0, 102, 760, 120, fill="#8b5a2b", outline="#8b5a2b")  # Draw the ground strip.
+    for x_position in range(0, 760, 40):  # Repeat block accents across the ground.
+        header_canvas.create_line(x_position, 102, x_position, 120, fill="#6f451e")  # Draw vertical block seams.
+    for x_position in range(18, 260, 66):  # Add brick accents to the ground.
+        header_canvas.create_rectangle(x_position, 76, x_position + 46, 102, fill="#c96f2d", outline="#8b4513", width=2)  # Draw a brick block.
+        header_canvas.create_line(x_position + 2, 89, x_position + 44, 89, fill="#8b4513")  # Split the brick block in half.
+        header_canvas.create_line(x_position + 15, 76, x_position + 15, 102, fill="#8b4513")  # Add the brick seam.
+    header_canvas.create_rectangle(610, 62, 672, 102, fill="#29a74a", outline="#1f7e37", width=3)  # Draw a green pipe.
+    header_canvas.create_rectangle(630, 42, 652, 62, fill="#29a74a", outline="#1f7e37", width=3)  # Draw the pipe lip.
+    header_canvas.create_rectangle(350, 58, 402, 98, fill="#ffd166", outline="#c98f00", width=3)  # Draw a question block.
+    header_canvas.create_text(376, 78, text="?", fill="#8c5c00", font=("Consolas", 24, "bold"))  # Mark the block with a question symbol.
+    header_canvas.create_rectangle(470, 64, 524, 100, fill="#ef7d31", outline="#a94d14", width=3)  # Draw a bonus block.
+    header_canvas.create_text(497, 82, text="#", fill="#fff6d5", font=("Consolas", 20, "bold"))  # Mark the bonus block.
+
+    panel_frame = tk.Frame(outer_frame, bg="#f8f1d9", highlightbackground="#d86a25", highlightthickness=4)  # Create the main content panel.
+    panel_frame.pack(fill="both", expand=True)  # Let the panel fill the remaining space.
+
+    title_label = tk.Label(panel_frame, text="Password Strength Analyzer", font=("Segoe UI", 20, "bold"), bg="#f8f1d9", fg="#c92a2a")  # Build the title label.
+    title_label.pack(anchor="w", padx=18, pady=(14, 2))  # Place the title at the top of the panel.
+    prompt_label = tk.Label(panel_frame, text="Enter a password to analyze:", font=("Segoe UI", 11, "bold"), bg="#f8f1d9", fg="#2d2d2d")  # Build the prompt label.
+    prompt_label.pack(anchor="w", padx=18)  # Place the prompt above the input box.
+
+    input_row = tk.Frame(panel_frame, bg="#f8f1d9")  # Create a row for the input and action button.
+    input_row.pack(fill="x", padx=18, pady=(8, 10))  # Place the input row below the prompt.
+    password_entry = tk.Entry(input_row, show="*", font=("Consolas", 12), width=34, relief="flat", bd=0, fg="#14324d", insertbackground="#14324d")  # Create a masked password input.
+    password_entry.pack(side="left", fill="x", expand=True, ipady=6)  # Stretch the input box across the row.
+    analyze_button = tk.Button(input_row, text="ANALYZE", command=lambda: analyze_current_password(), bg="#e53935", fg="#ffffff", activebackground="#c62828", activeforeground="#ffffff", relief="raised", bd=3, padx=16, pady=6, cursor="hand2")  # Create the action button.
+    analyze_button.pack(side="left", padx=(10, 0))  # Place the button beside the input box.
+
+    result_frame = tk.Frame(panel_frame, bg="#1f2a44", highlightbackground="#14324d", highlightthickness=3)  # Create a game-status style panel.
+    result_frame.pack(fill="both", expand=True, padx=18, pady=(0, 14))  # Let the result panel grow with the window.
+    result_label = tk.Label(result_frame, text="RESULTS", font=("Consolas", 12, "bold"), bg="#1f2a44", fg="#ffd166")  # Add a retro status heading.
+    result_label.pack(anchor="w", padx=12, pady=(10, 4))  # Place the heading at the top of the result panel.
+    result_box = scrolledtext.ScrolledText(result_frame, height=14, font=("Consolas", 10), wrap="word", bg="#102030", fg="#f7f7f7", insertbackground="#f7f7f7", relief="flat", bd=0, padx=10, pady=10)  # Create the themed results panel.
+    result_box.pack(fill="both", expand=True, padx=12, pady=(0, 12))  # Let the panel fill the available space.
     result_box.insert("1.0", "Your password report will appear here.")  # Show an initial placeholder message.
     result_box.configure(state="disabled")  # Make the result panel read-only until updated.
+
+    footer_label = tk.Label(panel_frame, text="Power up your password with length, mix, and a little style.", font=("Segoe UI", 9, "italic"), bg="#f8f1d9", fg="#6b4f1d")  # Add a playful footer line.
+    footer_label.pack(anchor="w", padx=18, pady=(0, 12))  # Place the footer at the bottom of the panel.
+
+    coin = header_canvas.create_oval(562, 34, 592, 64, fill="#ffd54f", outline="#f4b400", width=3)  # Draw a gold coin.
+    coin_text = header_canvas.create_text(577, 49, text="$", fill="#8a5a00", font=("Consolas", 16, "bold"))  # Add a coin symbol.
+    coin_state = {"direction": 1, "offset": 0}  # Track the coin bobbing animation.
+
+    def animate_coin() -> None:  # Move the coin up and down like a floating reward.
+        if not header_canvas.winfo_exists() or not root.winfo_exists():  # Stop if the window is gone.
+            return  # Exit without rescheduling.
+        delta = coin_state["direction"] * 2  # Move the coin by a small amount each step.
+        header_canvas.move(coin, 0, delta)  # Shift the coin circle.
+        header_canvas.move(coin_text, 0, delta)  # Shift the coin symbol.
+        coin_state["offset"] += delta  # Update the tracked offset.
+        if coin_state["offset"] >= 12:  # Reverse after the coin rises too far.
+            coin_state["direction"] = -1  # Start moving the coin downward.
+        elif coin_state["offset"] <= 0:  # Reverse after the coin drops back down.
+            coin_state["direction"] = 1  # Start moving the coin upward.
+        root.after(160, animate_coin)  # Keep the animation going.
+
+    sparkles = [  # Store the sparkle text items so they can pulse.
+        header_canvas.create_text(610, 28, text="*", fill="#ffffff", font=("Consolas", 14, "bold")),  # Create one sparkle.
+        header_canvas.create_text(694, 46, text="*", fill="#ffffff", font=("Consolas", 14, "bold")),  # Create a second sparkle.
+        header_canvas.create_text(330, 30, text="*", fill="#ffffff", font=("Consolas", 14, "bold")),  # Create a third sparkle.
+    ]  # End of the sparkle list.
+    sparkle_state = {"bright": True}  # Track whether the sparkles are bright or dim.
+
+    def animate_sparkles() -> None:  # Alternate sparkle visibility to mimic a twinkle effect.
+        if not header_canvas.winfo_exists() or not root.winfo_exists():  # Stop if the window is gone.
+            return  # Exit without rescheduling.
+        sparkle_state["bright"] = not sparkle_state["bright"]  # Flip the sparkle state.
+        sparkle_color = "#ffffff" if sparkle_state["bright"] else "#cfefff"  # Pick a bright or softer glow.
+        for sparkle in sparkles:  # Update each sparkle in the header.
+            header_canvas.itemconfigure(sparkle, fill=sparkle_color)  # Apply the new sparkle color.
+        root.after(280, animate_sparkles)  # Keep the twinkle effect going.
+
+    animate_coin()  # Start the coin bobbing animation.
+    animate_sparkles()  # Start the sparkle animation.
 
     def analyze_current_password() -> None:  # Analyze whatever the user entered into the GUI.
         password = password_entry.get()  # Read the current password from the input box.
@@ -177,8 +259,7 @@ def run_gui(config: dict[str, object] | None = None) -> None:  # Run the analyze
         result_box.insert("1.0", report)  # Insert the new report.
         result_box.configure(state="disabled")  # Lock the result box again after the update.
 
-    analyze_button = tk.Button(root, text="Analyze Password", command=analyze_current_password, font=("Segoe UI", 10, "bold"))  # Create the action button.
-    analyze_button.pack(anchor="w", pady=(0, 8))  # Place the button below the input box.
+    analyze_button.configure(command=analyze_current_password)  # Wire the themed button to the analysis action.
     root.bind("<Return>", lambda _event: analyze_current_password())  # Let the Enter key trigger the analysis.
     password_entry.focus_set()  # Put the cursor in the password box immediately.
     root.mainloop()  # Start the GUI event loop.
